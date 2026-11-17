@@ -4,7 +4,7 @@ Windows 10/11 x64 的本地作业截止提醒工具。内置 Microsoft WebView2 
 
 项目主页：https://github.com/wangwangshu/bnbu-ddl-reminder 。维护者：[wangwangshu](https://github.com/wangwangshu)。
 
-**发布状态：SignPath Foundation 免费签名申请已提交，等待审核；尚未获批，也尚未获得正式代码签名。** 未签名测试包可能被 Windows 智能应用控制拦截。不要为了运行测试包关闭系统保护。
+**发布状态：SignPath Foundation 免费签名申请因公开信誉记录不足未获批准，程序尚未获得正式代码签名。** 未签名测试包可能被 Windows 智能应用控制拦截。不要为了运行测试包关闭系统保护。
 
 这是个人制作的工具，非学校官方客户端。学校登录和网络访问权限由学校决定。页面结构变化可能影响采集；请以学校实际截止时间为准。
 
@@ -44,7 +44,7 @@ Windows 10/11 x64 的本地作业截止提醒工具。内置 Microsoft WebView2 
 
 ## Code signing policy
 
-见 [CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md)。免费签名申请状态见 [SIGNPATH_APPLICATION.md](SIGNPATH_APPLICATION.md)。**申请已提交不等于已经取得免费签名资格，服务方仍需审核项目。**
+见 [CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md)。免费签名审核结果见 [SIGNPATH_APPLICATION.md](SIGNPATH_APPLICATION.md)。**本项目目前没有 SignPath Foundation 正式签名资格。**
 
 ## 隐私与维护
 

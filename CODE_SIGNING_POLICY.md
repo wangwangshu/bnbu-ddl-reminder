@@ -2,7 +2,7 @@
 
 ## Current status
 
-This project's application to SignPath Foundation is **submitted and awaiting review**. On 17 November 2026, the application page was verified to show "Form submitted" and "Thank you, we'll be in touch soon." This confirms submission only. No application approval or production signing certificate has been recorded. Current test binaries are unsigned. The repository must not claim to be signed by SignPath before acceptance.
+This project's free application to SignPath Foundation was **declined because the project has insufficient verifiable public reputation**. The maintainer supplied the review email on 17 November 2026. The Foundation welcomed a future application after broader recognition and clarified that this was not a judgment on code quality or potential. No approval or production signing certificate has been obtained. Current test binaries are unsigned, and the prepared Foundation signing workflow remains disabled.
 
 After approval, and only for releases actually signed through the approved service, the project will add the required attribution: “Free code signing provided by SignPath.io, certificate by SignPath Foundation.”
 
