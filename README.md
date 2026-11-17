@@ -17,7 +17,13 @@ Windows 10/11 x64 的本地作业截止提醒工具。内置 Microsoft WebView2 
 - 当前用户安装、桌面快捷方式、可选开机启动和卸载入口。
 - 不附带任何使用者的作业或登录资料。
 
-## 构建
+## Download
+
+[未签名审核候选包与构建记录](https://github.com/wangwangshu/bnbu-ddl-reminder/actions/runs/44024428000)：打开页面底部的 `unsigned-review-candidate` 附件，下载并解压后可找到安装包。GitHub 附件下载需要登录，且有保留期限；此附件预计保留至 2027-02-15。
+
+此构建**尚未签名，尚未获 SignPath Foundation 批准**。签名政策见下方 Code signing policy；后续只有实际通过签名验证的版本才会标为正式签名版。
+
+## 从源码构建
 
 在 Windows PowerShell 或 PowerShell 7 中运行：
 
