@@ -1,0 +1,62 @@
+name: SignPath approved release
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  approved-release:
+    if: vars.SIGNPATH_APPROVED == 'true'
+    runs-on: windows-latest
+    environment: release-signing
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore verified dependencies
+        shell: pwsh
+        run: ./RestoreDependencies.ps1
+      - name: Build application
+        shell: pwsh
+        run: ./Build.ps1 -Stage Application
+      - uses: actions/upload-artifact@v4
+        id: app-artifact
+        with:
+          name: application-for-signing
+          path: build/payload/BNBU-DDL.exe
+          if-no-files-found: error
+      - uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+          organization-id: '${{ vars.SIGNPATH_ORGANIZATION_ID }}'
+          project-slug: '${{ vars.SIGNPATH_PROJECT_SLUG }}'
+          signing-policy-slug: '${{ vars.SIGNPATH_RELEASE_POLICY }}'
+          artifact-configuration-slug: '${{ vars.SIGNPATH_APP_CONFIGURATION }}'
+          github-artifact-id: '${{ steps.app-artifact.outputs.artifact-id }}'
+          wait-for-completion: true
+          output-artifact-directory: build/payload
+      - name: Package signed application without recompiling
+        shell: pwsh
+        run: ./Build.ps1 -Stage Installer -RequireSignedApplication
+      - uses: actions/upload-artifact@v4
+        id: installer-artifact
+        with:
+          name: installer-for-signing
+          path: dist/BNBU-DDL-Setup.exe
+          if-no-files-found: error
+      - uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+          organization-id: '${{ vars.SIGNPATH_ORGANIZATION_ID }}'
+          project-slug: '${{ vars.SIGNPATH_PROJECT_SLUG }}'
+          signing-policy-slug: '${{ vars.SIGNPATH_RELEASE_POLICY }}'
+          artifact-configuration-slug: '${{ vars.SIGNPATH_INSTALLER_CONFIGURATION }}'
+          github-artifact-id: '${{ steps.installer-artifact.outputs.artifact-id }}'
+          wait-for-completion: true
+          output-artifact-directory: signed
+      - name: Verify outer and embedded signatures
+        shell: pwsh
+        run: ./VerifySignedRelease.ps1 -Installer ./signed/BNBU-DDL-Setup.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-signed-release
+          path: signed/
+          if-no-files-found: error

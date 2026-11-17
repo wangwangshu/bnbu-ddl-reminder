@@ -1,0 +1,35 @@
+name: Build unsigned review candidate
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore verified dependencies
+        shell: pwsh
+        run: ./RestoreDependencies.ps1
+      - name: Build unsigned candidate
+        shell: pwsh
+        run: ./Build.ps1
+      - name: Check reminder logic
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory reports -Force | Out-Null
+          $report = Join-Path $pwd 'reports/reminder.txt'
+          $p = Start-Process ./build/payload/BNBU-DDL.exe -ArgumentList @('--self-test',('"'+$report+'"')) -WindowStyle Hidden -Wait -PassThru
+          Get-Content $report
+          if ($p.ExitCode -ne 0) { throw 'Reminder checks failed.' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-review-candidate
+          path: |
+            dist/
+            reports/
+            deps/dependency-lock.generated.json
+          if-no-files-found: error

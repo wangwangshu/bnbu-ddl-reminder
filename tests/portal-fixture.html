@@ -1,0 +1,9 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>本地测试 Timeline</title>
+<body><h1>本地测试 Timeline</h1><p>这是用于验证程序采集逻辑的模拟页面。</p>
+<section id="events"><div data-region="event-item"><h6><a href="https://ispace.bnbu.edu.cn/mod/assign/view.php?id=fixture-1" aria-label="集成测试作业一 activity in 测试课程 is due on 22 November 2040, 11:59 PM">集成测试作业一</a></h6><a href="https://ispace.bnbu.edu.cn/mod/assign/view.php?id=fixture-1&amp;action=editsubmission">Add submission</a></div></section>
+<button id="more">Show more activities</button>
+<script>document.getElementById('more').onclick = function () {
+document.getElementById('events').insertAdjacentHTML('beforeend', `<div data-region="event-item"><a href="https://ispace.bnbu.edu.cn/mod/assign/view.php?id=fixture-2" aria-label="集成测试作业二 activity in 测试课程二 is due on 30 November 2040, 11:00 PM">集成测试作业二</a></div>`);
+this.remove();
+};</script>
+</body></html>

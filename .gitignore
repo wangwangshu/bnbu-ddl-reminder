@@ -1,0 +1,13 @@
+deps/
+build/
+dist/
+reports/
+data/
+portal-profile/
+*.pfx
+*.p12
+*.pem
+*.key
+*.log
+*.user
+.env*
