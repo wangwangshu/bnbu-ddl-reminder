@@ -1,6 +1,6 @@
 # 免费签名申请准备单
 
-状态：**资料准备中，尚未提交，尚未获批。**
+状态（2026-11-17）：**公开源码与 GitHub 构建已完成，申请表草稿已填写；GitHub MFA 尚待完成确认。尚未提交，尚未获批。**
 
 申请入口：https://signpath.org/apply
 资格条款：https://signpath.org/terms
@@ -14,7 +14,9 @@
 - 项目主页和公开仓库：https://github.com/wangwangshu/bnbu-ddl-reminder 。
 - 维护者、审核者、批准者：GitHub 用户 wangwangshu；目前是单人维护项目。
 - 联系邮箱：**由申请人本人提供并确认**。
-- 公开发布状态：本地已构建未签名候选包；尚未记录公开仓库的 release URL。
+- 公开发布状态：源码已公开；未签名审核候选包已由 GitHub Actions 构建并作为运行附件保存。尚无正式签名 release。
+- 可核查构建：https://github.com/wangwangshu/bnbu-ddl-reminder/actions/runs/44024428000 （结果：成功；源码提交 `ed64bb95494c92a574db5c9f1495422422a8f284`）。
+- 构建附件：`unsigned-review-candidate`，SHA-256 `6131f64dfef0d0675799fa73b38c3368577b9c7fd9c2fa7b0f06a1aedfd02a51`；运行附件有保留期限，不能代替永久 release。
 - 已有验证：本地模拟页面采集/翻页、提醒逻辑、安装器解包、隔离安装引擎、快捷方式、图标。
 - 限制：学校首次登录、不同物理电脑、正式签名后的 SAC 测试仍待记录。
 
@@ -26,11 +28,9 @@ WebView2 SDK 使用随 SDK 提供的开源许可；Evergreen runtime bootstrappe
 
 ## 接下来需要实际完成
 
-1. 仓库所有者审核此源码包与 MIT 许可，并建立/授权公开 GitHub 仓库。
-2. 在自己的 GitHub 账号启用 MFA，确认维护者和签名批准者。
-3. 补充仓库 URL、联系邮箱、实际团队角色以及公开的功能说明/未签名测试版本页面。
-4. 检查 GitHub Actions 的可验证构建成功；记录真实运行链接。
-5. 由申请人提交表单；不要在聊天中发送密码、验证码、私钥或证件照片。
-6. 等服务方审核结果。批准后再配置真实 organization/project/artifact/signing policy 和 API token。
+1. 维护者亲自在自己的 GitHub 账号启用 MFA；此账号同时承担维护、审核与签名批准职责。
+2. 在申请中如实披露新项目现状，并向审核方确认 WebView2 运行时安装组件的资格；联系邮箱只用于申请，不在仓库公开。
+3. 维护者核对申请草稿并完成最终提交。不要在聊天中发送密码、验证码、私钥或证件照片。
+4. 等服务方审核结果。批准后再配置真实 organization/project/artifact/signing policy 和 API token，并开启 SignPath MFA。
 
 源码准备完成不等于申请已提交，申请提交不等于审核通过；最终签名文件必须验证后再发布。
