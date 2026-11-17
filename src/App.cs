@@ -186,8 +186,25 @@ namespace BnbuReminder {
             return new Label { Text = text, Location = new Point(x, y), Size = new Size(w, h), Font = Font(size, bold ? FontStyle.Bold : FontStyle.Regular), ForeColor = Ink, BackColor = Color.Transparent, AutoEllipsis = true };
         }
         public static Button Button(string text, int x, int y, int w, bool primary = false) {
-            var b = new Button { Text = text, Location = new Point(x, y), Size = new Size(w, 38), Font = Font(9), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand, BackColor = primary ? Blue : Color.White, ForeColor = primary ? Color.White : Ink };
+            var b = new Button { Text = text, Location = new Point(x, y), Size = new Size(w, 38), MinimumSize = new Size(w, 38), AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, Padding = new Padding(10, 8, 10, 8), Font = Font(9), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand, BackColor = primary ? Blue : Color.White, ForeColor = primary ? Color.White : Ink };
             b.FlatAppearance.BorderColor = Color.FromArgb(221, 228, 239); return b;
+        }
+        public static Label Text(string text, float size = 10, bool bold = false) {
+            return new Label { Text = text, AutoSize = true, Font = Font(size, bold ? FontStyle.Bold : FontStyle.Regular), ForeColor = Ink, BackColor = Color.Transparent, Margin = new Padding(0, 0, 0, 8) };
+        }
+        public static void Configure(Form form) {
+            form.SuspendLayout();
+            form.AutoScaleDimensions = new SizeF(96, 96);
+            form.AutoScaleMode = AutoScaleMode.Dpi;
+            form.Font = Font(10);
+        }
+        public static void Finish(Form form) {
+            form.ResumeLayout(true);
+            form.Shown += (s, e) => {
+                var work = Screen.FromControl(form).WorkingArea;
+                form.MinimumSize = new Size(Math.Min(form.MinimumSize.Width, work.Width), Math.Min(form.MinimumSize.Height, work.Height));
+                form.Size = new Size(Math.Min(form.Width, work.Width), Math.Min(form.Height, work.Height));
+            };
         }
     }
     public class MainForm : Form {
@@ -201,6 +218,7 @@ namespace BnbuReminder {
         HashSet<string> openReminders = new HashSet<string>();
         PortalForm portalForm;
         public MainForm(bool startBackground, EventWaitHandle show) {
+            Theme.Configure(this);
             background = startBackground; showEvent = show;
             Text = "BNBU DDL 提醒"; Size = new Size(1000, 720); MinimumSize = new Size(850, 580);
 #if STORE_BUILD
@@ -208,39 +226,64 @@ namespace BnbuReminder {
 #endif
             StartPosition = FormStartPosition.CenterScreen; BackColor = Theme.Canvas; Font = Theme.Font(10);
             Icon = Theme.BrandIcon;
-            Controls.Add(new PictureBox { Image = Theme.BrandImage, Location = new Point(32, 24), Size = new Size(48, 48), SizeMode = PictureBoxSizeMode.Zoom });
-            Controls.Add(Theme.Label("BNBU DDL 提醒", 96, 26, 620, 42, 24, true));
-            var badge = Theme.Label("●  后台提醒中", 790, 37, 170, 27, 10, true); badge.ForeColor = Color.FromArgb(30, 128, 94); badge.Anchor = AnchorStyles.Top | AnchorStyles.Right; Controls.Add(badge);
-            var intro = Theme.Label("提前 1 天提醒  ·  读取本机清单  ·  Edge 关闭后也能提醒", 32, 78, 890, 30, 10); intro.ForeColor = Theme.Muted; Controls.Add(intro);
-            var add = Theme.Button("＋ 添加作业", 32, 125, 135, true); add.Click += (s, e) => AddTask(); Controls.Add(add);
-            var refresh = Theme.Button("读取本机数据", 178, 125, 135); refresh.Click += (s, e) => RefreshTasks(true); Controls.Add(refresh);
-            var import = Theme.Button("导入清单", 324, 125, 110); import.Click += (s, e) => Import(); Controls.Add(import);
-            var portal = Theme.Button("登录并同步", 445, 125, 125); portal.Click += (s, e) => OpenPortal(); Controls.Add(portal);
-            var demo = Theme.Button("试一下提醒", 581, 125, 125); demo.Click += (s, e) => ShowDemo(); Controls.Add(demo);
+            var frame = new Panel { Dock = DockStyle.Fill, AutoScroll = true };
+            var root = new TableLayoutPanel { Dock = DockStyle.Top, Height = 660, ColumnCount = 1, RowCount = 7, Padding = new Padding(24, 20, 24, 16), Margin = Padding.Empty };
+            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            for (int row = 0; row < 7; row++) root.RowStyles.Add(new RowStyle(row == 4 ? SizeType.Percent : SizeType.AutoSize, row == 4 ? 100 : 0));
+            frame.Controls.Add(root); Controls.Add(frame);
+            var header = new TableLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, Margin = new Padding(0, 0, 0, 10) };
+            header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); header.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            var heading = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, Margin = Padding.Empty, WrapContents = true };
+            heading.Controls.Add(new PictureBox { Image = Theme.BrandImage, Size = new Size(48, 48), SizeMode = PictureBoxSizeMode.Zoom, Margin = new Padding(0, 0, 14, 0) });
+            heading.Controls.Add(Theme.Text("BNBU DDL 提醒", 24, true));
+            var badge = Theme.Text("●  后台提醒中", 10, true); badge.ForeColor = Color.FromArgb(30, 128, 94); badge.Margin = new Padding(12, 12, 0, 0);
+            header.Controls.Add(heading, 0, 0); header.Controls.Add(badge, 1, 0); root.Controls.Add(header, 0, 0);
+            var intro = Theme.Text("提前 1 天提醒  ·  读取本机清单  ·  Edge 关闭后也能提醒"); intro.ForeColor = Theme.Muted; root.Controls.Add(intro, 0, 1);
+            var toolbar = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true, Margin = new Padding(0, 4, 0, 16) };
+            root.Controls.Add(toolbar, 0, 2);
+            var add = Theme.Button("＋ 添加作业", 0, 0, 135, true); add.Click += (s, e) => AddTask(); toolbar.Controls.Add(add);
+            var refresh = Theme.Button("读取本机数据", 0, 0, 135); refresh.Click += (s, e) => RefreshTasks(true); toolbar.Controls.Add(refresh);
+            var import = Theme.Button("导入清单", 0, 0, 110); import.Click += (s, e) => Import(); toolbar.Controls.Add(import);
+            var portal = Theme.Button("登录并同步", 0, 0, 125); portal.Click += (s, e) => OpenPortal(); toolbar.Controls.Add(portal);
+            var demo = Theme.Button("试一下提醒", 0, 0, 125); demo.Click += (s, e) => ShowDemo(); toolbar.Controls.Add(demo);
 #if STORE_BUILD
             refresh.Text = "刷新本机清单";
-            var startup = Theme.Button("开机提醒设置", 717, 125, 135);
+            var startup = Theme.Button("开机提醒设置", 0, 0, 135);
             startup.Click += (s, e) => {
                 try { Process.Start("ms-settings:startupapps"); }
                 catch { MessageBox.Show(this, "请打开 Windows 设置 → 应用 → 启动，开启 BNBU DDL Reminder。", "开机提醒"); }
-            }; Controls.Add(startup);
+            }; toolbar.Controls.Add(startup);
             intro.Text = "提前 1 天提醒  ·  作业保存在本机  ·  可在开机提醒设置中开启自动启动";
 #endif
-            summary = Theme.Label("正在读取…", 32, 190, 890, 30, 13, true); Controls.Add(summary);
-            cards = new FlowLayoutPanel { Location = new Point(28, 232), Size = new Size(930, 362), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom, AutoScroll = true, WrapContents = false, FlowDirection = FlowDirection.TopDown, BackColor = Theme.Canvas };
-            Controls.Add(cards);
-            empty = Theme.Label("还没有作业。点击“登录并同步”，在程序里登录自己的 iSpace。", 14, 22, 750, 80, 13);
-            status = Theme.Label("", 32, 612, 900, 26, 9); status.ForeColor = Theme.Muted; status.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right; Controls.Add(status);
-            var hint = Theme.Label("关闭窗口会留在右下角托盘继续提醒。电脑需开机并登录；睡眠或关机时不弹窗。", 32, 643, 910, 25, 9); hint.ForeColor = Theme.Muted; hint.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right; Controls.Add(hint);
+            summary = Theme.Text("正在读取…", 13, true); summary.Margin = new Padding(0, 4, 0, 12); root.Controls.Add(summary, 0, 3);
+            cards = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, WrapContents = false, FlowDirection = FlowDirection.TopDown, BackColor = Theme.Canvas, Margin = Padding.Empty };
+            root.Controls.Add(cards, 0, 4);
+            empty = Theme.Text("还没有作业。点击“登录并同步”，在程序里登录自己的 iSpace。", 13); empty.Margin = new Padding(8, 16, 8, 16);
+            status = Theme.Text("", 9); status.ForeColor = Theme.Muted; status.Margin = new Padding(0, 12, 0, 8); root.Controls.Add(status, 0, 5);
+            var hint = Theme.Text("关闭窗口会留在右下角托盘继续提醒。电脑需开机并登录；睡眠或关机时不弹窗。", 9); hint.ForeColor = Theme.Muted; root.Controls.Add(hint, 0, 6);
 #if STORE_BUILD
             hint.Text = "关闭窗口后在托盘提醒；请在 Windows 启动设置中开启本应用。电脑需开机并登录。";
 #endif
+            bool sizing = false;
+            Action fit = () => {
+                if (sizing || root.ClientSize.Width < 1) return;
+                sizing = true;
+                try {
+                    int width = Math.Max(160, root.ClientSize.Width - root.Padding.Horizontal);
+                    foreach (var label in new[] { intro, summary, status, hint }) label.MaximumSize = new Size(width, 0);
+                    int fixedHeight = root.Padding.Vertical;
+                    foreach (Control c in new Control[] { header, intro, toolbar, summary, status, hint }) fixedHeight += c.GetPreferredSize(new Size(width, 0)).Height + c.Margin.Vertical;
+                    int wanted = Math.Max(frame.ClientSize.Height, fixedHeight + (int)Math.Ceiling(160 * DeviceDpi / 96f));
+                    if (root.Height != wanted) root.Height = wanted;
+                } finally { sizing = false; }
+            };
+            root.Layout += (s, e) => fit(); frame.SizeChanged += (s, e) => fit();
             var menu = new ContextMenuStrip(); menu.Items.Add("打开作业清单", null, (s, e) => BringUp()); menu.Items.Add("登录并同步", null, (s, e) => OpenPortal()); menu.Items.Add("退出程序", null, (s, e) => { quitting = true; Close(); });
             tray = new NotifyIcon { Text = "BNBU DDL 提醒 · 提前 1 天", Icon = Theme.BrandIcon, Visible = true, ContextMenuStrip = menu };
             tray.DoubleClick += (s, e) => BringUp();
             FormClosing += (s, e) => { if (!quitting && e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; Hide(); } };
             FormClosed += (s, e) => { tray.Visible = false; tray.Dispose(); clock.Dispose(); if (portalForm != null) portalForm.Dispose(); };
-            cards.SizeChanged += (s, e) => { foreach (Control card in cards.Controls) card.Width = Math.Max(700, cards.ClientSize.Width - 24); };
+            cards.SizeChanged += (s, e) => ResizeCards();
             clock = new System.Windows.Forms.Timer { Interval = 1000 }; int ticks = 0;
             clock.Tick += (s, e) => {
                 if (showEvent.WaitOne(0)) BringUp();
@@ -257,6 +300,12 @@ namespace BnbuReminder {
                     portalForm = new PortalForm(() => RefreshTasks(true), null, null); portalForm.Show(); portalForm.Hide();
                 }
             };
+            Theme.Finish(this);
+        }
+        void ResizeCards() {
+            int width = Math.Max(200, cards.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - 12);
+            empty.MaximumSize = new Size(Math.Max(100, width - 16), 0);
+            foreach (Control card in cards.Controls) if (card != empty) card.Width = width;
         }
         void OpenPortal() {
             if (portalForm == null || portalForm.IsDisposed) portalForm = new PortalForm(() => RefreshTasks(true), null, null);
@@ -282,22 +331,47 @@ namespace BnbuReminder {
             foreach (Control c in cards.Controls.Cast<Control>().ToArray()) { cards.Controls.Remove(c); if (c != empty) c.Dispose(); }
             if (file.tasks.Count == 0) cards.Controls.Add(empty);
             foreach (var task in file.tasks.OrderBy(t => Store.Done(t, state) ? 1 : 0).ThenBy(t => t.dueAt)) cards.Controls.Add(Card(task, state, now));
-            cards.ResumeLayout();
+            cards.ResumeLayout(); ResizeCards();
         }
         bool BridgeReady() { try { using (var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Edge\NativeMessagingHosts\cn.bnbu.ddl_reminder")) return k != null; } catch { return false; } }
         Panel Card(DdlTask t, UserState state, long now) {
             bool done = Store.Done(t, state), late = t.dueAt <= now;
-            var card = new Panel { Size = new Size(Math.Max(700, cards.ClientSize.Width - 24), 128), Margin = new Padding(4, 0, 4, 12), BackColor = Color.White };
-            card.Controls.Add(new Panel { BackColor = done ? Color.FromArgb(174, 184, 199) : late ? Color.FromArgb(228, 145, 66) : Theme.Blue, Dock = DockStyle.Left, Width = 4 });
-            var title = Theme.Label(t.title, 22, 16, card.Width - 200, 27, 12, true); title.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right; card.Controls.Add(title);
-            var course = Theme.Label(t.course ?? "个人作业", 22, 52, card.Width - 200, 24, 9); course.ForeColor = Theme.Muted; course.Anchor = title.Anchor; card.Controls.Add(course);
+            var card = new Panel { Width = Math.Max(200, cards.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - 12), Margin = new Padding(4, 0, 4, 12), BackColor = Color.White };
+            Color accent = done ? Color.FromArgb(174, 184, 199) : late ? Color.FromArgb(228, 145, 66) : Theme.Blue;
+            card.Paint += (s, e) => { using (var brush = new SolidBrush(accent)) e.Graphics.FillRectangle(brush, 0, 0, Math.Max(3, card.DeviceDpi / 24), card.Height); };
+            var title = Theme.Text(t.title, 12, true); card.Controls.Add(title);
+            var course = Theme.Text(t.course ?? "个人作业", 9); course.ForeColor = Theme.Muted; card.Controls.Add(course);
             string until = done ? "已完成" : late ? "已过截止时间" : "剩余 " + Math.Max(1, Math.Ceiling((t.dueAt - now) / 3600000.0)) + " 小时";
-            string due = "截止  " + Store.LocalTime(t.dueAt).ToString("M月d日 ddd HH:mm") + "     ·     " + until;
-            var date = Theme.Label(due, 22, 88, card.Width - 200, 23, 10); date.ForeColor = late && !done ? Color.FromArgb(176, 102, 34) : Theme.Blue; date.Anchor = title.Anchor; card.Controls.Add(date);
-            var mark = Theme.Button(done ? "恢复待办" : "标记完成", card.Width - 138, 18, 115); mark.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            var date = Theme.Text("截止  " + Store.LocalTime(t.dueAt).ToString("M月d日 ddd HH:mm") + "     ·     " + until, 10);
+            date.ForeColor = late && !done ? Color.FromArgb(176, 102, 34) : Theme.Blue; card.Controls.Add(date);
+            var mark = Theme.Button(done ? "恢复待办" : "标记完成", 0, 0, 115);
             mark.Click += (s, e) => { var u = Store.LoadState(); if (Store.Done(t, u)) u.completed.Remove(t.id); else u.completed[t.id] = t.dueAt; Store.SaveState(u); RefreshTasks(true); }; card.Controls.Add(mark);
-            if (!String.IsNullOrEmpty(t.url)) { var open = Theme.Button("打开作业", card.Width - 138, 69, 115); open.Anchor = mark.Anchor; open.Click += (s, e) => Store.OpenAssignment(t); card.Controls.Add(open); }
-            return card;
+            Button open = null;
+            if (!String.IsNullOrEmpty(t.url)) { open = Theme.Button("打开作业", 0, 0, 115); open.Click += (s, e) => Store.OpenAssignment(t); card.Controls.Add(open); }
+            bool arranging = false;
+            card.Layout += (s, e) => {
+                if (arranging) return; arranging = true;
+                try {
+                    Func<int, int> px = value => (int)Math.Ceiling(value * card.DeviceDpi / 96f);
+                    int actionsWidth = 0, actionBottom = px(14);
+                    foreach (var button in new[] { mark, open }.Where(b => b != null)) {
+                        button.MinimumSize = new Size(px(115), px(38)); button.Padding = new Padding(px(10), px(8), px(10), px(8));
+                        button.Size = button.GetPreferredSize(Size.Empty); actionsWidth = Math.Max(actionsWidth, button.Width);
+                    }
+                    int textWidth = Math.Max(px(50), card.ClientSize.Width - actionsWidth - px(58));
+                    int y = px(14);
+                    foreach (var label in new[] { title, course, date }) {
+                        label.MaximumSize = new Size(textWidth, 0); label.Size = label.GetPreferredSize(new Size(textWidth, 0)); label.Location = new Point(px(20), y); y += label.Height + px(8);
+                    }
+                    foreach (var button in new[] { mark, open }.Where(b => b != null)) {
+                        button.Location = new Point(card.ClientSize.Width - px(16) - actionsWidth, actionBottom); actionBottom += button.Height + px(10);
+                    }
+                    int height = Math.Max(y, actionBottom) + px(8);
+                    if (card.Height != height) card.Height = height;
+                } finally { arranging = false; }
+            };
+            card.DpiChangedAfterParent += (s, e) => card.PerformLayout();
+            card.PerformLayout(); return card;
         }
         void CheckReminders() {
             var state = Store.LoadState(); long now = Store.Now;
@@ -319,6 +393,7 @@ namespace BnbuReminder {
         public event Action Snooze;
         public event Action MarkDone;
         public ReminderForm(DdlTask task, bool demo) {
+            Theme.Configure(this);
             Icon = Theme.BrandIcon;
             Text = demo ? "BNBU 测试提醒" : "BNBU 作业提醒"; ClientSize = new Size(510, 290); FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false; MinimizeBox = false; TopMost = true; BackColor = Color.White; StartPosition = FormStartPosition.CenterScreen; Font = Theme.Font(10);
             Controls.Add(Theme.Label(demo ? "提醒已经送达" : task.dueAt < Store.Now ? "这项作业已截止" : "这项作业将在 1 天内截止", 25, 24, 460, 35, 18, true));
@@ -331,11 +406,13 @@ namespace BnbuReminder {
                 var done = Theme.Button("标记完成", 341, 230, 140); done.Click += (s, e) => { if (MarkDone != null) MarkDone(); Close(); }; Controls.Add(done);
             }
             Shown += (s, e) => System.Media.SystemSounds.Asterisk.Play();
+            Theme.Finish(this);
         }
     }
     public class TaskEditor : Form {
         public DdlTask Result;
         public TaskEditor() {
+            Theme.Configure(this);
             Icon = Theme.BrandIcon;
             Text = "添加作业"; ClientSize = new Size(470, 300); StartPosition = FormStartPosition.CenterParent; FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false; MinimizeBox = false; BackColor = Color.White; Font = Theme.Font(10);
             Controls.Add(Theme.Label("作业名称", 24, 25, 110, 25)); var title = new TextBox { Location = new Point(135, 23), Width = 305, MaxLength = 500 }; Controls.Add(title);
@@ -345,7 +422,7 @@ namespace BnbuReminder {
             var save = Theme.Button("保存并提醒", 285, 239, 155, true); save.Click += (s, e) => {
                 if (String.IsNullOrWhiteSpace(title.Text)) { title.Focus(); return; }
                 Result = new DdlTask { id = "manual-" + Guid.NewGuid().ToString("N"), title = title.Text.Trim(), course = course.Text.Trim(), dueAt = new DateTimeOffset(date.Value).ToUnixTimeMilliseconds() }; DialogResult = DialogResult.OK;
-            }; Controls.Add(save); AcceptButton = save;
+            }; Controls.Add(save); AcceptButton = save; Theme.Finish(this);
         }
     }
     public static class SelfTest {

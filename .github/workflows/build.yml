@@ -25,6 +25,12 @@ jobs:
           $p = Start-Process ./build/payload/BNBU-DDL.exe -ArgumentList @('--self-test',('"'+$report+'"')) -WindowStyle Hidden -Wait -PassThru
           Get-Content $report
           if ($p.ExitCode -ne 0) { throw 'Reminder checks failed.' }
+      - name: Check text scaling and wrapping
+        shell: pwsh
+        run: |
+          $results = @(./CheckLayout.ps1 -ApplicationDirectory ./build/payload)
+          $results
+          Copy-Item -LiteralPath $results[-1] -Destination reports/layout-checks.txt
       - uses: actions/upload-artifact@v4
         with:
           name: unsigned-review-candidate

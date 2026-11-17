@@ -21,6 +21,7 @@ $refs = @('/reference:System.dll','/reference:System.Core.dll','/reference:Syste
 $branding = @(('/win32icon:'+$icon),('/resource:'+$icon+',AppIcon.ico'),('/resource:'+(Join-Path $base 'assets/app-icon.png')+',AppIcon.png'))
 & $compiler /nologo /target:winexe /platform:x64 /optimize+ /utf8output /define:STORE_BUILD $branding ('/win32manifest:'+(Join-Path $src 'app.manifest')) ('/out:'+(Join-Path $payload 'BNBU-DDL.exe')) $refs ('/resource:'+(Join-Path $src 'PortalExtractor.js')+',PortalExtractor.js') (Join-Path $src 'App.cs') (Join-Path $src 'Portal.cs') (Join-Path $src 'AssemblyInfo.cs')
 if ($LASTEXITCODE -ne 0) { throw 'Store application compilation failed.' }
+Copy-Item -LiteralPath (Join-Path $src 'app.config') -Destination (Join-Path $payload 'BNBU-DDL.exe.config')
 & $compiler /nologo /target:winexe /platform:x64 /optimize+ ('/out:'+(Join-Path $payload 'StartupLauncher.exe')) /reference:System.dll (Join-Path $src 'StartupLauncher.cs')
 if ($LASTEXITCODE -ne 0) { throw 'Startup launcher compilation failed.' }
 Copy-Item -LiteralPath (Join-Path $lib 'Microsoft.Web.WebView2.Core.dll'),(Join-Path $lib 'Microsoft.Web.WebView2.WinForms.dll'),(Join-Path $base 'deps/webview2/runtimes/win-x64/native/WebView2Loader.dll') -Destination $payload
@@ -66,7 +67,7 @@ $report = Join-Path $build 'reminder-checks.txt'
 $check = Start-Process -FilePath (Join-Path $payload 'BNBU-DDL.exe') -ArgumentList @('--self-test',('"'+$report+'"')) -WindowStyle Hidden -Wait -PassThru
 if ($check.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $report)) { throw 'Store reminder checks failed.' }
 Get-Content -LiteralPath $report
-$allowed = @('BNBU-DDL.exe','StartupLauncher.exe','Microsoft.Web.WebView2.Core.dll','Microsoft.Web.WebView2.WinForms.dll','WebView2Loader.dll','ThirdPartyNotices.txt','LICENSE','使用说明.txt','AppxManifest.xml','Assets/Logo44.png','Assets/Logo50.png','Assets/Logo150.png')
+$allowed = @('BNBU-DDL.exe','BNBU-DDL.exe.config','StartupLauncher.exe','Microsoft.Web.WebView2.Core.dll','Microsoft.Web.WebView2.WinForms.dll','WebView2Loader.dll','ThirdPartyNotices.txt','LICENSE','使用说明.txt','AppxManifest.xml','Assets/Logo44.png','Assets/Logo50.png','Assets/Logo150.png')
 $files = @(Get-ChildItem -LiteralPath $payload -Recurse -File | ForEach-Object { $_.FullName.Substring($payload.Length + 1).Replace('\','/') })
 if (@(Compare-Object $allowed $files).Count -ne 0) { throw 'Store payload contains unexpected or missing files.' }
 $makeappx = Join-Path $base 'deps/windows-sdk-buildtools/bin/10.0.26100.0/x64/makeappx.exe'
@@ -74,5 +75,8 @@ $package = Join-Path $dist ("BNBU-DDL-Store_$($identity.Version)_x64.msix")
 & $makeappx pack /d $payload /p $package /o
 if ($LASTEXITCODE -ne 0) { throw 'MSIX packaging or manifest validation failed.' }
 Copy-Item -LiteralPath $report -Destination (Join-Path $dist 'reminder-checks.txt') -Force
+$layoutReport = @(& (Join-Path $base 'CheckLayout.ps1') -ApplicationDirectory $payload)
+$layoutReport | Write-Output
+Copy-Item -LiteralPath $layoutReport[-1] -Destination (Join-Path $dist 'layout-checks.txt') -Force
 [pscustomobject]@{Status='Unsigned Store submission package; Microsoft signing requires Store certification';StoreId=$identity.StoreId;PackageIdentity=$identity.Name;Version=$identity.Version;SHA256=(Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash;Payload=$payload;AutomaticStartup='Disabled until user enables in Windows Startup settings';SelfTests='Passed'} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dist 'build-report.json') -Encoding UTF8
 Write-Output $package

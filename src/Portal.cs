@@ -18,6 +18,7 @@ namespace BnbuReminder {
         int pages;
         string signature = "", fixture, report;
         public PortalForm(Action onUpdated, string fixturePath, string reportPath) {
+            Theme.Configure(this);
             Icon = Theme.BrandIcon;
             updated = onUpdated; fixture = fixturePath; report = reportPath;
             Text = "登录并同步 · BNBU DDL 提醒"; Size = new Size(1100, 800); MinimumSize = new Size(850, 600); StartPosition = FormStartPosition.CenterScreen; BackColor = Theme.Canvas;
@@ -33,6 +34,7 @@ namespace BnbuReminder {
             Shown += async (s, e) => { if (!ready) await Initialize(); };
             FormClosing += (s, e) => { if (fixture == null && e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; Hide(); } };
             Disposed += (s, e) => { scan.Dispose(); web.Dispose(); };
+            Theme.Finish(this);
         }
         async Task Initialize() {
             try {

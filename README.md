@@ -2,6 +2,8 @@
 
 Windows 10/11 x64 的本地作业截止提醒工具。内置 Microsoft WebView2 打开 BNBU iSpace，使用者在学校页面自行登录，程序读取 Dashboard Timeline 并提前 24 小时提醒。关掉主窗口后可在托盘继续运行。
 
+独立版 3.0.2 / 商店候选版 3.1.1 修复文字和按钮裁切：启用 .NET Framework 4.8 的 PerMonitorV2 缩放，主界面按内容布局，长作业标题/课程换行，卡片按实测文字高度扩展。检查覆盖两种窗口大小与 100%/125%/150%/200% 的文字放大压力场景；真实 Windows 显示缩放和跨屏切换仍需设备复核。
+
 项目主页：https://github.com/wangwangshu/bnbu-ddl-reminder 。维护者：[wangwangshu](https://github.com/wangwangshu)。
 
 **发布状态：SignPath Foundation 免费签名申请因公开信誉记录不足未获批准，程序尚未获得正式代码签名。** 未签名测试包可能被 Windows 智能应用控制拦截。不要为了运行测试包关闭系统保护。

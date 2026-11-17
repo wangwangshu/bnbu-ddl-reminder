@@ -27,7 +27,7 @@ The MSIX is a submission input for Partner Center. It has no locally trusted sig
 ## Submission checklist
 
 1. Confirm the developer account's identity-verification and agreement status in Partner Center.
-2. Create the first submission and upload `dist/store/BNBU-DDL-Store_3.1.0.0_x64.msix`.
+2. Create the first submission and upload `dist/store/BNBU-DDL-Store_3.1.1.0_x64.msix`.
 3. Configure free pricing, desktop device availability, Education category, an accurate age rating, Chinese listing, screenshots, support URL and [privacy policy](https://github.com/wangwangshu/bnbu-ddl-reminder/blob/main/PRIVACY.md).
 4. Explain `runFullTrust`: local WinForms tray reminders, selected-file import, and embedded school login via WebView2. No elevation, service, driver, antivirus exclusions or trust-store changes.
 5. Reviewers can add a manual task and use 试一下提醒 without a school account. School synchronization requires a personal BNBU iSpace account and school network access; no user's school credentials are provided.

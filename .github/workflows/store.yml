@@ -9,6 +9,8 @@ on:
       - 'store/**'
       - 'BuildStore.ps1'
       - 'RestoreStoreDependencies.ps1'
+      - 'CheckLayout.ps1'
+      - 'tests/LayoutChecks.cs'
       - '.github/workflows/store.yml'
 permissions:
   contents: read

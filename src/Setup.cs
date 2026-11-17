@@ -142,7 +142,7 @@ namespace BnbuSetup {
         static void Verify(string report) {
             string temp = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(report)), "package-check-" + Guid.NewGuid().ToString("N"));
             Extract(temp);
-            string[] required = { "BNBU-DDL.exe", "app.ico", "Microsoft.Web.WebView2.Core.dll", "Microsoft.Web.WebView2.WinForms.dll", "WebView2Loader.dll", "MicrosoftEdgeWebview2Setup.exe", "使用说明.txt", "ThirdPartyNotices.txt" };
+            string[] required = { "BNBU-DDL.exe", "BNBU-DDL.exe.config", "app.ico", "Microsoft.Web.WebView2.Core.dll", "Microsoft.Web.WebView2.WinForms.dll", "WebView2Loader.dll", "MicrosoftEdgeWebview2Setup.exe", "使用说明.txt", "ThirdPartyNotices.txt" };
             foreach (var file in required) if (!File.Exists(Path.Combine(temp, file))) throw new Exception("Missing " + file);
             if (Directory.GetFiles(temp, "*.json", SearchOption.AllDirectories).Any() || Directory.Exists(Path.Combine(temp, "data")) || Directory.Exists(Path.Combine(temp, "portal-profile"))) throw new Exception("Package includes user data.");
             File.WriteAllText(report, "PASS package extraction, required components, no coursework or account data; extracted=" + temp);

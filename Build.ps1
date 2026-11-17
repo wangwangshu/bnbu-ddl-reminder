@@ -17,6 +17,7 @@ if ($Stage -ne 'Installer') {
   $refs = @('/reference:System.dll','/reference:System.Core.dll','/reference:System.Drawing.dll','/reference:System.Windows.Forms.dll','/reference:System.Web.Extensions.dll',('/reference:'+(Join-Path $lib 'Microsoft.Web.WebView2.Core.dll')),('/reference:'+(Join-Path $lib 'Microsoft.Web.WebView2.WinForms.dll')))
   & $compiler /nologo /target:winexe /platform:x64 /optimize+ /utf8output $branding ('/win32manifest:'+(Join-Path $src 'app.manifest')) ('/out:'+(Join-Path $payload 'BNBU-DDL.exe')) $refs ('/resource:'+(Join-Path $src 'PortalExtractor.js')+',PortalExtractor.js') (Join-Path $src 'App.cs') (Join-Path $src 'Portal.cs') (Join-Path $src 'AssemblyInfo.cs')
   if ($LASTEXITCODE -ne 0) { throw 'Application compilation failed.' }
+  Copy-Item -LiteralPath (Join-Path $src 'app.config') -Destination (Join-Path $payload 'BNBU-DDL.exe.config') -Force
   Copy-Item -LiteralPath (Join-Path $lib 'Microsoft.Web.WebView2.Core.dll'),(Join-Path $lib 'Microsoft.Web.WebView2.WinForms.dll'),(Join-Path $sdk 'runtimes/win-x64/native/WebView2Loader.dll'),(Join-Path $base 'deps/MicrosoftEdgeWebview2Setup.exe'),$icon,(Join-Path $base '使用说明.txt') -Destination $payload -Force
   $notices = [System.IO.File]::ReadAllText((Join-Path $sdk 'LICENSE.txt'))+"`r`n"+[System.IO.File]::ReadAllText((Join-Path $sdk 'NOTICE.txt'))
   [System.IO.File]::WriteAllText((Join-Path $payload 'ThirdPartyNotices.txt'),$notices,[System.Text.UTF8Encoding]::new($false))
