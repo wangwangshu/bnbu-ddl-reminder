@@ -1,6 +1,6 @@
 # 免费签名申请准备单
 
-状态（2026-11-17）：**公开源码与 GitHub 构建已完成，申请表草稿已填写；GitHub MFA 尚待完成确认。尚未提交，尚未获批。**
+状态（2026-11-17）：**公开源码与 GitHub 构建已完成，GitHub 身份验证器已配置；正在准备申请表最终提交。尚未提交，尚未获批。**
 
 申请入口：https://signpath.org/apply
 资格条款：https://signpath.org/terms
@@ -28,7 +28,7 @@ WebView2 SDK 使用随 SDK 提供的开源许可；Evergreen runtime bootstrappe
 
 ## 接下来需要实际完成
 
-1. 维护者亲自在自己的 GitHub 账号启用 MFA；此账号同时承担维护、审核与签名批准职责。
+1. 维护者保持 GitHub MFA 已启用；此账号同时承担维护、审核与签名批准职责。
 2. 在申请中如实披露新项目现状，并向审核方确认 WebView2 运行时安装组件的资格；联系邮箱只用于申请，不在仓库公开。
 3. 维护者核对申请草稿并完成最终提交。不要在聊天中发送密码、验证码、私钥或证件照片。
 4. 等服务方审核结果。批准后再配置真实 organization/project/artifact/signing policy 和 API token，并开启 SignPath MFA。
