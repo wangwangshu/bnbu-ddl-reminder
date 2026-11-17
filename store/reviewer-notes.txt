@@ -1,0 +1,21 @@
+BNBU DDL Reminder — first Store submission
+
+This is an independent student utility, not an official BNBU client.
+
+No school account is needed to test the core reminder features:
+1. Launch the app. The main window lists locally saved tasks.
+2. Click 试一下提醒 (Test reminder). A sample reminder appears without changing any real task.
+3. Click 添加作业 (Add task). Enter a sample task name, course and due date, then 保存并提醒 (Save).
+4. A task due within the next 24 hours triggers a local reminder. The popup supports opening the school assignment, snoozing 30 minutes or marking completed. A manually entered task has no assignment URL.
+5. Close the main window. The tray icon keeps the local reminder process running. Double-click to reopen; use 退出程序 (Exit) in the tray menu to end it.
+6. The startup extension is disabled by default. 开机提醒设置 (Startup settings) opens Windows Settings > Apps > Startup. Users may enable BNBU DDL Reminder to start the tray reminder at their next Windows sign-in.
+
+Optional school sync: 登录并同步 (Sign in and sync) opens the official HTTPS BNBU iSpace portal in WebView2. A user's own school account and authorized network access are required. The app reads recognizable assignment deadlines only from the ispace.bnbu.edu.cn/my/ Dashboard. No school credentials are included in this submission. School sync cannot be fully validated by a reviewer who does not have an eligible account. Please contact the maintainer through the project's support page if further test access is required.
+
+Restricted capability runFullTrust is required for this .NET Framework WinForms desktop app: tray reminders, selected-file import and embedded WebView2. The application uses no elevation, system service, driver, certificate installation, security exclusion or protection disablement. User data is stored in local application data, never in the installed package directory.
+
+WebView2 Runtime is required only for the school browser. The package contains the Microsoft WebView2 SDK DLLs and license notices, not a nested runtime installer. If the runtime is missing, the app offers Microsoft's official download page. Manual task entry and reminders remain usable.
+
+No ads, payments, subscriptions, telemetry backend, online user messaging or project-operated data server. Privacy policy and source:
+https://github.com/wangwangshu/bnbu-ddl-reminder/blob/main/PRIVACY.md
+https://github.com/wangwangshu/bnbu-ddl-reminder

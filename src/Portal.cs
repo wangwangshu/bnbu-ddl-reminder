@@ -64,6 +64,13 @@ namespace BnbuReminder {
                 }
             } catch (Exception ex) {
                 Store.Log(ex); message.Text = "门户未能打开，请检查网络或重新运行安装包修复组件。";
+#if STORE_BUILD
+                message.Text = "门户未能打开，请检查网络和 Microsoft Edge WebView2 Runtime。";
+                if (fixture == null && ex is WebView2RuntimeNotFoundException) {
+                    if (MessageBox.Show(this, "学校登录需要 Microsoft Edge WebView2 Runtime。是否打开微软官方下载页面？本机已有作业仍可提醒。", "需要 WebView2 Runtime", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                        Process.Start("https://developer.microsoft.com/microsoft-edge/webview2/#download");
+                }
+#endif
                 if (fixture != null) { File.WriteAllText(report, "FAIL " + ex); Environment.ExitCode = 1; Close(); }
             }
         }

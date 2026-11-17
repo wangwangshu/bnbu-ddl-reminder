@@ -33,7 +33,16 @@ namespace BnbuReminder {
         }
     }
     public static class Store {
-        public static string Root = Environment.GetEnvironmentVariable("BNBU_DDL_DATA_DIR") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BNBU-DDL");
+#if STORE_BUILD
+        public const string DataFolder = "BNBU-DDL-Store";
+        public const string InstanceName = "Local\\BnbuDdlStore";
+        public const string ShowEventName = "Local\\BnbuDdlStoreShow";
+#else
+        public const string DataFolder = "BNBU-DDL";
+        public const string InstanceName = "Local\\BnbuDdlDesktopIntegrated";
+        public const string ShowEventName = "Local\\BnbuDdlIntegratedShow";
+#endif
+        public static string Root = Environment.GetEnvironmentVariable("BNBU_DDL_DATA_DIR") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DataFolder);
         public static string DataFile { get { return Path.Combine(Root, "data", "tasks.json"); } }
         public static string StateFile { get { return Path.Combine(Root, "data", "state.json"); } }
         public static JavaScriptSerializer Json() { return new JavaScriptSerializer { MaxJsonLength = 2 * 1024 * 1024 }; }
@@ -84,6 +93,7 @@ namespace BnbuReminder {
             return Merge(data);
         }
         public static void ImportLocal() {
+#if !STORE_BUILD
             string oldFile = Path.Combine(Root, "tasks.json");
             if (!File.Exists(DataFile) && !File.Exists(oldFile) && Environment.GetEnvironmentVariable("BNBU_DDL_DATA_DIR") == null) {
                 string legacy = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "Documents", "Codex", "BNBU-DDL-Reminder", "data", "tasks.json");
@@ -102,6 +112,7 @@ namespace BnbuReminder {
                     }
                 }
             } catch { }
+#endif
         }
         public static UserState LoadState() {
             var s = Read<UserState>(StateFile, new UserState()) ?? new UserState();
@@ -156,8 +167,8 @@ namespace BnbuReminder {
             Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false);
             if (args.Length > 2 && args[0] == "--webview-test") { Application.Run(new PortalForm(null, args[1], args[2])); return Environment.ExitCode; }
             bool created;
-            using (var single = new Mutex(true, "Local\\BnbuDdlDesktopIntegrated", out created)) {
-                using (var show = new EventWaitHandle(false, EventResetMode.AutoReset, "Local\\BnbuDdlIntegratedShow")) {
+            using (var single = new Mutex(true, Store.InstanceName, out created)) {
+                using (var show = new EventWaitHandle(false, EventResetMode.AutoReset, Store.ShowEventName)) {
                     if (!created) { if (!args.Contains("--background")) show.Set(); return 0; }
                     try { Store.ImportLocal(); Application.Run(new MainForm(args.Contains("--background"), show)); }
                     catch (Exception ex) { Store.Log(ex); if (!args.Contains("--background")) MessageBox.Show(ex.Message, "BNBU DDL 提醒"); return 1; }
@@ -192,6 +203,9 @@ namespace BnbuReminder {
         public MainForm(bool startBackground, EventWaitHandle show) {
             background = startBackground; showEvent = show;
             Text = "BNBU DDL 提醒"; Size = new Size(1000, 720); MinimumSize = new Size(850, 580);
+#if STORE_BUILD
+            Text = "BNBU DDL 提醒（商店版）";
+#endif
             StartPosition = FormStartPosition.CenterScreen; BackColor = Theme.Canvas; Font = Theme.Font(10);
             Icon = Theme.BrandIcon;
             Controls.Add(new PictureBox { Image = Theme.BrandImage, Location = new Point(32, 24), Size = new Size(48, 48), SizeMode = PictureBoxSizeMode.Zoom });
@@ -203,12 +217,24 @@ namespace BnbuReminder {
             var import = Theme.Button("导入清单", 324, 125, 110); import.Click += (s, e) => Import(); Controls.Add(import);
             var portal = Theme.Button("登录并同步", 445, 125, 125); portal.Click += (s, e) => OpenPortal(); Controls.Add(portal);
             var demo = Theme.Button("试一下提醒", 581, 125, 125); demo.Click += (s, e) => ShowDemo(); Controls.Add(demo);
+#if STORE_BUILD
+            refresh.Text = "刷新本机清单";
+            var startup = Theme.Button("开机提醒设置", 717, 125, 135);
+            startup.Click += (s, e) => {
+                try { Process.Start("ms-settings:startupapps"); }
+                catch { MessageBox.Show(this, "请打开 Windows 设置 → 应用 → 启动，开启 BNBU DDL Reminder。", "开机提醒"); }
+            }; Controls.Add(startup);
+            intro.Text = "提前 1 天提醒  ·  作业保存在本机  ·  可在开机提醒设置中开启自动启动";
+#endif
             summary = Theme.Label("正在读取…", 32, 190, 890, 30, 13, true); Controls.Add(summary);
             cards = new FlowLayoutPanel { Location = new Point(28, 232), Size = new Size(930, 362), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom, AutoScroll = true, WrapContents = false, FlowDirection = FlowDirection.TopDown, BackColor = Theme.Canvas };
             Controls.Add(cards);
             empty = Theme.Label("还没有作业。点击“登录并同步”，在程序里登录自己的 iSpace。", 14, 22, 750, 80, 13);
             status = Theme.Label("", 32, 612, 900, 26, 9); status.ForeColor = Theme.Muted; status.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right; Controls.Add(status);
             var hint = Theme.Label("关闭窗口会留在右下角托盘继续提醒。电脑需开机并登录；睡眠或关机时不弹窗。", 32, 643, 910, 25, 9); hint.ForeColor = Theme.Muted; hint.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right; Controls.Add(hint);
+#if STORE_BUILD
+            hint.Text = "关闭窗口后在托盘提醒；请在 Windows 启动设置中开启本应用。电脑需开机并登录。";
+#endif
             var menu = new ContextMenuStrip(); menu.Items.Add("打开作业清单", null, (s, e) => BringUp()); menu.Items.Add("登录并同步", null, (s, e) => OpenPortal()); menu.Items.Add("退出程序", null, (s, e) => { quitting = true; Close(); });
             tray = new NotifyIcon { Text = "BNBU DDL 提醒 · 提前 1 天", Icon = Theme.BrandIcon, Visible = true, ContextMenuStrip = menu };
             tray.DoubleClick += (s, e) => BringUp();
@@ -223,8 +249,11 @@ namespace BnbuReminder {
             }; clock.Start();
             Shown += (s, e) => {
                 RefreshTasks(false); if (background) Hide(); CheckReminders();
+#if !STORE_BUILD
                 if (!background && Store.Load().tasks.Count == 0) BeginInvoke(new Action(OpenPortal));
-                else if (Directory.Exists(Path.Combine(Store.Root, "portal-profile"))) {
+                else
+#endif
+                if (Directory.Exists(Path.Combine(Store.Root, "portal-profile"))) {
                     portalForm = new PortalForm(() => RefreshTasks(true), null, null); portalForm.Show(); portalForm.Hide();
                 }
             };
@@ -327,6 +356,14 @@ namespace BnbuReminder {
                 Store.Root = isolated;
                 long now = 1794902400000L;
                 var task = new DdlTask { id = "1", title = "测试中文 DDL", dueAt = now + 86400000L, url = "https://ispace.bnbu.edu.cn/mod/assign/view.php?id=1" };
+#if STORE_BUILD
+                Directory.CreateDirectory(isolated);
+                string selectedFile = Path.Combine(isolated, "tasks.json");
+                File.WriteAllText(selectedFile, Store.Json().Serialize(new TaskFile { tasks = new List<DdlTask> { task } }), Encoding.UTF8);
+                Store.ImportLocal();
+                Assert(!File.Exists(Store.DataFile), "Store build does not automatically import legacy files", lines);
+                Assert(Store.ImportFile(selectedFile) == 1 && Store.Load().tasks.Count == 1, "explicit JSON import works in Store build", lines);
+#endif
                 var state = new UserState();
                 Assert(!Store.ShouldRemind(task, state, now - 1), "before 24h boundary", lines);
                 Assert(Store.ShouldRemind(task, state, now), "exact 24h boundary", lines);

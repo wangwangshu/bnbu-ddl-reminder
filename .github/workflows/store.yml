@@ -1,0 +1,30 @@
+name: Build unsigned Microsoft Store submission package
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'store/**'
+      - 'BuildStore.ps1'
+      - 'RestoreStoreDependencies.ps1'
+      - '.github/workflows/store.yml'
+permissions:
+  contents: read
+jobs:
+  store-package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore hash-verified Store dependencies
+        shell: pwsh
+        run: ./RestoreStoreDependencies.ps1
+      - name: Build and validate unsigned MSIX
+        shell: pwsh
+        run: ./BuildStore.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-store-submission
+          path: dist/store/
+          if-no-files-found: error
