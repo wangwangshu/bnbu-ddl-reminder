@@ -1,8 +1,12 @@
 # Microsoft Store release
 
-Status: draft product created; not submitted, certified, signed, or publicly available yet.
+Status (2026-11-19): Store version **3.1.1.0** was submitted to Microsoft. Partner Center shows **Certification in progress**. Certification, Microsoft signing and public availability are still pending; the local MSIX and standalone EXE remain unsigned.
 
 The reserved product is **BNBU DDL Reminder**, Store ID `9N1NP999SXQ9`. Package identity values come from Partner Center's Product identity page and are recorded in `store/identity.json`. These are public package metadata, not certificates or signing credentials.
+
+Submission `1152921505702429126` has completed package validation, free pricing, Education / Study aids properties, age ratings (Microsoft Store 3+), Chinese and English listings, screenshots, runFullTrust justification and certification test instructions. The English listing explicitly states that the app interface is currently Chinese. It is configured to publish automatically after certification. Store link (available only after publication): https://apps.microsoft.com/detail/9N1NP999SXQ9.
+
+Partner Center estimates that certification usually takes a few hours and can take up to three business days in some cases. This is the platform's estimate, not a guaranteed release date. Approval and signing must be verified before calling this a signed release. The code version submitted is based on commit `6848cd5c3d3edbcef23e865965af6cbfc35c1853`; the submitted unsigned MSIX SHA256 is `EC7EE4B2C1FC63273576B6086E3558498B4A8EEF67DB6AA314C81A18F9812A98`.
 
 ## Build
 
